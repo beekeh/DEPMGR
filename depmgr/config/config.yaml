@@ -1,0 +1,7 @@
+ec_api_url: "https://api.elastic-cloud.com/api/v1"
+template: "minimal"
+timer:
+  time_limit_min: 40
+  grace_time_min: 10
+  num_grace: 2
+tf_dir: "tf"

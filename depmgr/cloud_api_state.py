@@ -7,7 +7,6 @@ import subprocess
 from datetime import datetime
 import uuid
 import asyncio
-from random import choice as randchoice
 
 class Base(rx.State):
     template_id: str = "minimal"
@@ -29,7 +28,7 @@ class Base(rx.State):
         self.tbutton_disabled = True
         self.clipboard_text = ""
 
-    async def waiting_ui(self):
+    def waiting_ui(self):
         print("starting waiting_ui")
         self.dep_state = self.dep_states[1]
         self.cbutton_disabled = True
@@ -83,7 +82,7 @@ class CloudAPI(Base):
                     if not self.running:
                         self._n_tasks -= 1
                         return
-            await asyncio.sleep(10)
+            await asyncio.sleep(20)
 
     def start_deployment(self):
         print("inside CloudAPI start_deployment")
@@ -158,12 +157,21 @@ class CloudAPI(Base):
         self.status_response = self.get_deployment()
         if self.status_response.status_code == 200:
             if self.status_response.json()['healthy'] == True:
-                print("Deployment Healthy")
+                print("Checking Kibana URL")
                 self.url = self.get_service_url(self.status_response)
-                self.dep_state = self.dep_states[2]
-                return True
+                url_resp = requests.get(self.url)
+                print("Checking Kibana URL")
+                print(url_resp.status_code)
+                if url_resp.status_code != 200:
+                    print("Kibana URL not ready yet")
+                    pass
+                else:
+                    print("Deployment Healthy")
+                    print("Kibana URL ready")
+                    self.dep_state = self.dep_states[2]
+                    return True
             else:
-                print("Deployment not healthy yet...")
+                print("Deployment not healthy yet")
                 self.dep_state = self.dep_states[1]
                 return False
         else:
